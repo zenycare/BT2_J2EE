@@ -1,50 +1,53 @@
 package bai2.Controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import bai2.model.Book;
 import bai2.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/books") // Base URL cho tất cả API trong controller
+@Controller
+@RequestMapping("/books")
 public class BookController {
 
     @Autowired
     private BookService bookService;
 
-    // 1. Lấy danh sách tất cả sách
     @GetMapping
-    public List<Book> getAllBooks() {
-        return bookService.getAllBooks();
+    public String listBooks(Model model) {
+        model.addAttribute("books", bookService.getAllBooks());
+        return "books";
     }
 
-    // 2. Lấy thông tin sách theo ID
-    @GetMapping("/{id}")
-    public Book getBookById(@PathVariable int id) {
-        return bookService.getBookById(id);
+    @GetMapping("/add")
+    public String addForm(Model model) {
+        model.addAttribute("book", new Book());
+        return "add-book";
     }
 
-    // 3. Thêm sách mới
-    @PostMapping
-    public String addBook(@RequestBody Book book) {
+    @PostMapping("/add")
+    public String addBook(@ModelAttribute Book book) {
         bookService.addBook(book);
-        return "Book added successfully!";
+        return "redirect:/books";
     }
 
-    // 4. Cập nhật thông tin sách
-    @PutMapping("/{id}")
+    @GetMapping("/edit/{id}")
+    public String editForm(@PathVariable int id, Model model) {
+        model.addAttribute("book", bookService.getBookById(id));
+        return "edit-book";
+    }
+
+    @PostMapping("/edit/{id}")
     public String updateBook(@PathVariable int id,
-            @RequestBody Book updatedBook) {
-        bookService.updateBook(id, updatedBook);
-        return "Book updated successfully!";
+            @ModelAttribute Book book) {
+        bookService.updateBook(id, book);
+        return "redirect:/books";
     }
 
-    // 5. Xóa sách theo ID
-    @DeleteMapping("/{id}")
+    @GetMapping("/delete/{id}")
     public String deleteBook(@PathVariable int id) {
         bookService.deleteBook(id);
-        return "Book deleted successfully!";
+        return "redirect:/books";
     }
 }
